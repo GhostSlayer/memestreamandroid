@@ -8,7 +8,7 @@ export default function PostComponent({ post }) {
 
   return (
     <View style={styles.image}>
-      <Text>{post.filetype} https://ms.odyssey346.dev/{post.location}</Text>
+      <Text>{String(post.filetype).toUpperCase()}</Text>
       {post.filetype === 'image' && (
         <Image source={{ uri: `https://ms.odyssey346.dev${post.location}` }} resizeMode={"contain"} style={{ height: 350 }} />
       )}
@@ -18,6 +18,7 @@ export default function PostComponent({ post }) {
           videoProps={{
             shouldPlay: false,
             resizeMode: ResizeMode.CONTAIN,
+            
             
             source: {
               uri: `https://ms.odyssey346.dev${post.location}`,
@@ -35,14 +36,11 @@ export default function PostComponent({ post }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    margin: 10
-  },
   image: {
-    marginTop: 30,
+    marginTop: 15,
     padding: 10,
     color: 'white',
-    backgroundColor: 'gray',
+    backgroundColor: "#EDF2F7",
     borderRadius: 15
   }
 });

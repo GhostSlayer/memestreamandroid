@@ -8,6 +8,7 @@ import {Buffer} from 'buffer';
 import VideoPlayer from 'expo-video-player'
 import { ResizeMode } from 'expo-av';
 import PostComponent from './components/Post';
+import TopbarComponent from './components/Topbar';
 
 
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
           'User-Agent': 'MemestreamApp/1.0'
         }
       })
-      const data = await request.json()
+      const data = (await request.json()).reverse()
   
       console.log(data)
       console.log(request.status)
@@ -56,7 +57,7 @@ export default function App() {
       setPosts(data)
   
       if (request.status) {
-        Alert.alert('DEBUG', 'Memestream API data fetched')
+        console.info('Memestream API data fetched')
       }
 
       setLoading(false)
@@ -125,10 +126,7 @@ export default function App() {
           />
         }
       >
-        <Appbar.Header>
-          <Appbar.Content title={"Memestream"} />
-          <Appbar.Action icon="refresh" onPress={() => { getPosts() }} />
-        </Appbar.Header>
+        <TopbarComponent getPosts={getPosts}/>
 
         <Button mode="contained-tonal" onPress={() => pickImage() }>Upload image</Button>
 
@@ -160,12 +158,7 @@ export default function App() {
         <View style={styles.container}>
           <Text>Open up </Text>
           {loading && <Text>Loading</Text>}
-          {!loading && posts.reverse().map((post, i) => {
-            let thumbnail = thumbnails.find((thumb => thumb.location === post.location))
-
-            
-
-            console.log('thumbnail', thumbnail?.location)
+          {!loading && posts.map((post, i) => {
             return ( 
               <PostComponent post={post}/>
             )
@@ -183,10 +176,10 @@ const styles = StyleSheet.create({
     margin: 10
   },
   image: {
-    marginTop: 30,
+    marginTop: 15,
     padding: 10,
     color: 'white',
-    backgroundColor: 'gray',
+    backgroundColor: "#EDF2F7",
     borderRadius: 15
   }
 });
