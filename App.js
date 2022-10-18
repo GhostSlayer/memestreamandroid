@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Appbar, Button, Dialog, Paragraph, Portal, Provider } from 'react-native-paper';
-import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as ImagePicker from 'expo-image-picker';
 import { v4 as uuid } from 'uuid'
 import {Buffer} from 'buffer';
@@ -32,14 +31,9 @@ export default function App() {
       console.log(request.status)
   
       setPosts(data)
-
-      data.map((post) => {
-        if (post.filetype !== 'video') return;
-        generateThumbnail(post.location)
-      })
   
       if (request.status) {
-        //Alert.alert('DEBUG', 'Memestream API data fetched')
+        Alert.alert('DEBUG', 'Memestream API data fetched')
       }
 
       setLoading(false)
@@ -63,17 +57,18 @@ export default function App() {
 
     if (!result.cancelled) {
       const uri = Platform.OS === 'ios' ? result.uri.replace('file://', '') : result.uri
-      const response = await fetch(uri);
-
-      console.log(response)
+      let fileExtension = uri.substr(uri.lastIndexOf('.') + 1);
 
       // FIXME: Uploading files from android not possible due to some expo trickery. Do another way to do this
-      const blob = await response.blob();
-      let uuidlol = `${uuid()}.jpg`
+      let uuidlol = `${uuid()}.${fileExtension}`
 
       const form = new FormData();
-      form.append('file', blob, uuidlol);
       
+      form.append('file', {
+        uri,
+        name: uuidlol,
+        type: `${result.type}/${fileExtension}`
+      })
 
       fetch('https://ms.odyssey346.dev/api/v1/upload', {
         method: 'POST',
@@ -85,23 +80,8 @@ export default function App() {
     }
   };
 
-  const generateThumbnail = async (path) => {
-    try {
-      const { uri } = await VideoThumbnails.getThumbnailAsync(
-        `https://ms.odyssey346.dev${path}`,
-        {
-          time: 15000,
-        }
-      );
-
-      setThumbnails([...thumbnails, { location: path, uri }]);
-
-    } catch (e) {
-      console.warn(e);
-    }
-  };
-
   useEffect(() =>  {
+    setLoading(true)
     getPosts()
   }, [])
   
@@ -111,7 +91,7 @@ export default function App() {
       <ScrollView>
         <Appbar.Header>
           <Appbar.Content title={"Memestream"} />
-          <Appbar.Action icon="refresh" onPress={() => { setLoading(true); setThumbnails([]); setPosts(); getPosts() }} />
+          <Appbar.Action icon="refresh" onPress={() => { getPosts() }} />
         </Appbar.Header>
 
         <Button mode="contained-tonal" onPress={() => pickImage() }>Upload image</Button>
@@ -131,7 +111,7 @@ export default function App() {
         <View style={styles.container}>
           <Text>Open up </Text>
           {loading && <Text>Loading</Text>}
-          {!loading && posts.map((post, i) => {
+          {!loading && posts.reverse().map((post, i) => {
             let thumbnail = thumbnails.find((thumb => thumb.location === post.location))
 
             if (post.filetype === 'video') return;
