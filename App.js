@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Appbar } from 'react-native-paper';
+import { Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Appbar, Button, Dialog, Paragraph, Portal, Provider } from 'react-native-paper';
 import * as VideoThumbnails from 'expo-video-thumbnails';
+import * as ImagePicker from 'expo-image-picker';
+import { v4 as uuid } from 'uuid'
+import {Buffer} from 'buffer';
+
 
 export default function App() {
   const [posts, setPosts] = useState()
   const [loading, setLoading] = useState(true)
   const [thumbnails, setThumbnails] = useState([])
+  const [visible, setVisible] = React.useState(true);
+
+  const hideDialog = () => setVisible(false);
 
   console.log(thumbnails)
 
   const getPosts = async () => {
     try {
+      // TODO: proxy requests through drivet's servers to ensure privacy. dont proxy uploads though 
       const request = await fetch('https://ms.odyssey346.dev/api/v1/posts', {
         headers: {
           'User-Agent': 'MemestreamApp/1.0'
@@ -31,15 +39,51 @@ export default function App() {
       })
   
       if (request.status) {
-        Alert.alert('DEBUG', 'Memestream API data fetched')
+        //Alert.alert('DEBUG', 'Memestream API data fetched')
       }
 
       setLoading(false)
     } catch (err) {
       console.error(err)
-      Alert.alert('ERROR', err.message)
+      Alert.alert('Error', `Failed to fetch Memestream API data. Error: ${err.message}`)
     }
   }
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: false,
+      aspect: [4, 3],
+      quality: 1,
+      
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      const uri = Platform.OS === 'ios' ? result.uri.replace('file://', '') : result.uri
+      const response = await fetch(uri);
+
+      console.log(response)
+
+      // FIXME: Uploading files from android not possible due to some expo trickery. Do another way to do this
+      const blob = await response.blob();
+      let uuidlol = `${uuid()}.jpg`
+
+      const form = new FormData();
+      form.append('file', blob, uuidlol);
+      
+
+      fetch('https://ms.odyssey346.dev/api/v1/upload', {
+        method: 'POST',
+        body: form,
+        headers: {
+          'User-Agent': 'MemestreamApp/1.0'
+        }
+      })
+    }
+  };
 
   const generateThumbnail = async (path) => {
     try {
@@ -63,33 +107,49 @@ export default function App() {
   
   
   return (
-    <ScrollView>
-      <Appbar.Header>
-        <Appbar.Content title={"Memestream"} />
-        <Appbar.Action icon="refresh" onPress={() => { setLoading(true); setThumbnails([]); setPosts(); getPosts() }} />
-      </Appbar.Header>
-      
-      <View style={styles.container}>
-        <Text>Open up </Text>
-        {loading && <Text>Loading</Text>}
-        {!loading && posts.map((post, i) => {
-          let thumbnail = thumbnails.find((thumb => thumb.location === post.location))
+    <Provider>
+      <ScrollView>
+        <Appbar.Header>
+          <Appbar.Content title={"Memestream"} />
+          <Appbar.Action icon="refresh" onPress={() => { setLoading(true); setThumbnails([]); setPosts(); getPosts() }} />
+        </Appbar.Header>
 
-          if (post.filetype === 'video') return;
+        <Button mode="contained-tonal" onPress={() => pickImage() }>Upload image</Button>
 
-          console.log('thumbnail', thumbnail?.location)
-          return (
-            <View style={styles.image}>
-              <Text>{post.filetype} https://ms.odyssey346.dev/{post.location}</Text>
-              {post.filetype === 'image' && (
-                <Image source={{ uri: `https://ms.odyssey346.dev${post.location}` }}   resizeMode={"contain"} style={{ height: 350 }} />
-              )}
-            </View>
-          )
-        })}
-      </View>
-      <StatusBar style="auto" />
-    </ScrollView>
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Title>Notice</Dialog.Title>
+            <Dialog.Content>
+              <Paragraph>Hello! Thank you for trying this app. As you probably know, this app is in pre-alpha stage, and is missing most of its functionality. They are being developed with timebeing</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideDialog}>Done</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+        
+        <View style={styles.container}>
+          <Text>Open up </Text>
+          {loading && <Text>Loading</Text>}
+          {!loading && posts.map((post, i) => {
+            let thumbnail = thumbnails.find((thumb => thumb.location === post.location))
+
+            if (post.filetype === 'video') return;
+
+            console.log('thumbnail', thumbnail?.location)
+            return (
+              <View style={styles.image}>
+                <Text>{post.filetype} https://ms.odyssey346.dev/{post.location}</Text>
+                {post.filetype === 'image' && (
+                  <Image source={{ uri: `https://ms.odyssey346.dev${post.location}` }}   resizeMode={"contain"} style={{ height: 350 }} />
+                )}
+              </View>
+            )
+          })}
+        </View>
+        <StatusBar style="auto" />
+      </ScrollView>
+    </Provider>
   );
 }
 
