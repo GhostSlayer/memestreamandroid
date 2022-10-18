@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Appbar, Button, Dialog, Paragraph, Portal, Provider } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { v4 as uuid } from 'uuid'
 import {Buffer} from 'buffer';
+import VideoPlayer from 'expo-video-player'
+import { ResizeMode } from 'expo-av';
 
 
 export default function App() {
@@ -76,6 +78,10 @@ export default function App() {
         headers: {
           'User-Agent': 'MemestreamApp/1.0'
         }
+      }).then((data) => {
+        getPosts()
+      }).catch(err => {
+        Alert.alert('Error uploading', 'An error occured while uploading file to memestream')
       })
     }
   };
@@ -114,7 +120,7 @@ export default function App() {
           {!loading && posts.reverse().map((post, i) => {
             let thumbnail = thumbnails.find((thumb => thumb.location === post.location))
 
-            if (post.filetype === 'video') return;
+            
 
             console.log('thumbnail', thumbnail?.location)
             return (
@@ -122,6 +128,24 @@ export default function App() {
                 <Text>{post.filetype} https://ms.odyssey346.dev/{post.location}</Text>
                 {post.filetype === 'image' && (
                   <Image source={{ uri: `https://ms.odyssey346.dev${post.location}` }}   resizeMode={"contain"} style={{ height: 350 }} />
+                )}
+
+                {post.filetype === 'video' && (
+                  <VideoPlayer
+                    videoProps={{
+                      shouldPlay: false,
+                      resizeMode: ResizeMode.CONTAIN,
+                      
+                      source: {
+                        uri: `https://ms.odyssey346.dev${post.location}`,
+                      },
+                    }}
+
+                    style={{
+                      height: Dimensions.get('window').height / 2,
+                    }}
+                    
+                  />
                 )}
               </View>
             )

@@ -1,25 +1,32 @@
 {
   "name": "memestreamandroid",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "np": "np --no-publish",
+    "postversion": "react-native-version"
   },
   "dependencies": {
     "@expo/webpack-config": "^0.17.2",
+    "@react-native-community/slider": "4.2.3",
     "buffer": "^6.0.3",
     "expo": "~46.0.16",
+    "expo-av": "^12.0.4",
     "expo-image-picker": "^13.3.1",
     "expo-status-bar": "~1.4.0",
+    "expo-video-player": "^2.2.0",
     "expo-video-thumbnails": "^6.4.0",
+    "np": "^7.6.2",
     "react": "18.0.0",
     "react-dom": "^18.0.0",
     "react-native": "0.69.6",
     "react-native-image-picker": "^4.10.0",
     "react-native-paper": "^5.0.0-rc.6",
+    "react-native-version": "^4.0.0",
     "react-native-video": "^5.2.1",
     "react-native-web": "^0.18.9",
     "uuid": "^9.0.0"
