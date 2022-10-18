@@ -3,20 +3,22 @@
     "react",
     "react-native"
   ],
-  "extends": ["eslint:recommended", "plugin:react-native/all"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "rules": {
     "no-unused-vars": "warn",
     "indent": ["error", 2],
     "no-multi-spaces": "error",
 
-    "react-native/no-unused-styles": 2,
+    "react/prop-types": "off",
+
+    "react-native/no-unused-styles": 1,
     "react-native/split-platform-components": 2,
-    "react-native/no-inline-styles": 2,
-    "react-native/no-color-literals": 2,
+    "react-native/no-color-literals": 1,
     "react-native/no-raw-text": 2,
     "react-native/no-single-element-style-arrays": 2
   },
   "env": {
+    "browser": true,
     "react-native/react-native": true
   },
   "parserOptions": {
