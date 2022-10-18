@@ -1,23 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Appbar, Button, Dialog, Paragraph, Portal, Provider } from 'react-native-paper';
+import { Alert, Dimensions, Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Appbar, Button, Dialog, Paragraph, Portal, Provider, Snackbar } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { v4 as uuid } from 'uuid'
 import {Buffer} from 'buffer';
 import VideoPlayer from 'expo-video-player'
 import { ResizeMode } from 'expo-av';
+import PostComponent from './components/Post';
 
 
 export default function App() {
   const [posts, setPosts] = useState()
   const [loading, setLoading] = useState(true)
-  const [thumbnails, setThumbnails] = useState([])
   const [visible, setVisible] = React.useState(true);
+  const [snackbarData, setSnackbarData] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+
+    getPosts()
+      .then(() => {
+        setRefreshing(false)
+      }).catch(() => {
+        setRefreshing(false)
+      })
+  }, []);
 
   const hideDialog = () => setVisible(false);
 
-  console.log(thumbnails)
+  const showSnackbar = (text) => {
+    console.log(text)
+    setSnackbarData({ visible: true, text: text })
+
+    setTimeout(() => {
+      setSnackbarData({ visible: false })
+    }, 3000)
+  }
+  
 
   const getPosts = async () => {
     try {
@@ -41,7 +62,7 @@ export default function App() {
       setLoading(false)
     } catch (err) {
       console.error(err)
-      Alert.alert('Error', `Failed to fetch Memestream API data. Error: ${err.message}`)
+      showSnackbar(`Failed to refresh Memestream API data`)
     }
   }
 
@@ -81,7 +102,8 @@ export default function App() {
       }).then((data) => {
         getPosts()
       }).catch(err => {
-        Alert.alert('Error uploading', 'An error occured while uploading file to memestream')
+        console.error(err)
+        Alert.alert('Error uploading', `An error occured while uploading file to memestream err`)
       })
     }
   };
@@ -94,7 +116,15 @@ export default function App() {
   
   return (
     <Provider>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            progressViewOffset={45}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      >
         <Appbar.Header>
           <Appbar.Content title={"Memestream"} />
           <Appbar.Action icon="refresh" onPress={() => { getPosts() }} />
@@ -112,6 +142,19 @@ export default function App() {
               <Button onPress={hideDialog}>Done</Button>
             </Dialog.Actions>
           </Dialog>
+          <Snackbar
+            visible={snackbarData.visible}
+            style={{ marginBottom: 80 }}
+            onDismiss={() => setSnackbarData({ visible: false }) }
+            action={{
+              label: 'Okay',
+              onPress: () => {
+                setSnackbarData({ visible: false })
+              },
+            }}>
+            {snackbarData.text}
+          </Snackbar>
+
         </Portal>
         
         <View style={styles.container}>
@@ -123,34 +166,12 @@ export default function App() {
             
 
             console.log('thumbnail', thumbnail?.location)
-            return (
-              <View style={styles.image}>
-                <Text>{post.filetype} https://ms.odyssey346.dev/{post.location}</Text>
-                {post.filetype === 'image' && (
-                  <Image source={{ uri: `https://ms.odyssey346.dev${post.location}` }}   resizeMode={"contain"} style={{ height: 350 }} />
-                )}
-
-                {post.filetype === 'video' && (
-                  <VideoPlayer
-                    videoProps={{
-                      shouldPlay: false,
-                      resizeMode: ResizeMode.CONTAIN,
-                      
-                      source: {
-                        uri: `https://ms.odyssey346.dev${post.location}`,
-                      },
-                    }}
-
-                    style={{
-                      height: Dimensions.get('window').height / 2,
-                    }}
-                    
-                  />
-                )}
-              </View>
+            return ( 
+              <PostComponent post={post}/>
             )
           })}
         </View>
+
         <StatusBar style="auto" />
       </ScrollView>
     </Provider>
