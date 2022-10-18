@@ -2,7 +2,7 @@
   "expo": {
     "name": "memestreamandroid",
     "slug": "memestreamandroid",
-    "version": "1.0.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,19 +18,23 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "expo": {
-      "plugins": ["expo-image-picker"]
+      "plugins": [
+        "expo-image-picker"
+      ]
     }
   }
 }
