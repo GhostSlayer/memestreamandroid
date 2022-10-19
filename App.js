@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { Alert, Dimensions, Image, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Appbar, Button, Dialog, Paragraph, Portal, Provider, Snackbar } from 'react-native-paper';
+import { Appbar, Button, Dialog, FAB, Paragraph, Portal, Provider, Snackbar } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { v4 as uuid } from 'uuid'
 import {Buffer} from 'buffer';
@@ -153,6 +153,12 @@ export default function App() {
             {snackbarData.text}
           </Snackbar>
 
+          <FAB
+            icon="plus"
+            style={styles.fab}
+            onPress={() => pickImage()}
+          />
+
         </Portal>
         
         <View style={styles.container}>
@@ -181,5 +187,11 @@ const styles = StyleSheet.create({
     color: 'white',
     backgroundColor: "#EDF2F7",
     borderRadius: 15
-  }
+  },
+  fab: {
+    position: 'absolute',
+    margin: 20,
+    right: 0,
+    bottom: 0,
+  },
 });
